@@ -3,8 +3,8 @@
 // Set up game display
 const CANVAS = document.createElement("CANVAS");
 CANVAS.setAttribute("id", "gameDisplay");
-CANVAS.height = window.screen.availHeight;
-CANVAS.width = window.screen.availWidth;
+CANVAS.height = window.screen.availHeight / 2;
+CANVAS.width = window.screen.availWidth / 2;
 document.getElementById("wrapper").appendChild(CANVAS);
 
 
@@ -41,7 +41,7 @@ const SCREEN_WIDTH = CANVAS.width;
 const SCREEN_HEIGHT = CANVAS.height;
 const MAP_WIDTH = MAP[0].length;
 const MAP_HEIGHT = MAP.length;
-const FOV = Math.PI / 4.0;
+const FOV = Math.PI / 4.0 * CANVAS.width / 500;
 const MAX_DEPTH = getMaxDrawLength();
 
 let wallColour = "#AAAAAA";
