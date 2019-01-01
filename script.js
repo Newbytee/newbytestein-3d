@@ -7,7 +7,6 @@ CANVAS.height = window.screen.availHeight / 2;
 CANVAS.width = window.screen.availWidth / 2;
 document.getElementById("wrapper").appendChild(CANVAS);
 
-
 const MAP = [
     "#################",
     "#000000000000000#",
@@ -32,17 +31,50 @@ const MAP = [
     "#000000000000000#",
     "#000000000000000#",
     "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#0000000000000000",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
+    "#000000000000000#",
     "#################"
 ];
+
+let map = MAP;
 
 //const CANVAS = document.getElementById("gameDisplay");
 const CTX = CANVAS.getContext("2d");
 const SCREEN_WIDTH = CANVAS.width;
 const SCREEN_HEIGHT = CANVAS.height;
-const MAP_WIDTH = MAP[0].length;
-const MAP_HEIGHT = MAP.length;
+const MAP_WIDTH = map[0].length;
+const MAP_HEIGHT = map.length;
 const FOV = Math.PI / 4.0 * CANVAS.width / 500;
 const MAX_DEPTH = getMaxDrawLength();
+const PLAYER_MOVE_SPEED = 1.5;
 
 let wallColour = "#AAAAAA";
 let ceilingColour = "#000000";
@@ -54,17 +86,27 @@ let playerA = 0.0; // Angle which the player is looking at
 
 CTX.imageSmoothingEnabled = false;
 
-setInterval(draw, 100);
+setInterval(draw, 50);
 
 document.addEventListener("keydown", function(evnt) {
     switch (evnt.key) {
         case "w":
-            playerX += Math.sin(playerA) * 1.5;
-            playerY += Math.cos(playerA) * 1.5;
+            playerX += Math.sin(playerA) * PLAYER_MOVE_SPEED;
+            playerY += Math.cos(playerA) * PLAYER_MOVE_SPEED;
+
+            if (map[Math.round(playerY)][Math.round(playerX)] === "#") {
+                playerX -= Math.sin(playerA) * PLAYER_MOVE_SPEED;
+                playerY -= Math.cos(playerA) * PLAYER_MOVE_SPEED;
+            }
             break;
         case "s":
-            playerX -= Math.sin(playerA) * 1.5;
-            playerY -= Math.cos(playerA) * 1.5;
+            playerX -= Math.sin(playerA) * PLAYER_MOVE_SPEED;
+            playerY -= Math.cos(playerA) * PLAYER_MOVE_SPEED;
+
+            if (map[Math.round(playerY)][Math.round(playerX)] === "#") {
+                playerX += Math.sin(playerA) * PLAYER_MOVE_SPEED;
+                playerY += Math.cos(playerA) * PLAYER_MOVE_SPEED;
+            }
             break;
         case "d":
             playerA += 0.2;
@@ -72,8 +114,34 @@ document.addEventListener("keydown", function(evnt) {
         case "a":
             playerA -= 0.2;
             break;
+        case " ":
+            const X = Math.floor(playerY + Math.sin(playerA));
+            const Y = Math.trunc(playerX + Math.cos(playerA));
+
+            console.log(X);
+            console.log(Y);
+
+            switch (map[Y][X]) {
+                case "#":
+                    editMap(X, Y, "0");
+                    break;
+                case "0":
+                    editMap(X, Y, "#");
+                    break;
+            }
+            break;
     }
 });
+
+function editMap(x, y, value) {
+    const TMP = map[y];
+    let tmpParts = [];
+
+    tmpParts.push(TMP.substring(0, x));
+    tmpParts.push(TMP.substring(x + 1));
+
+    map[y] = tmpParts[0] + value + tmpParts[1];
+}
 
 function getMaxDrawLength() {
     if (MAP_HEIGHT > MAP_WIDTH) {
@@ -94,8 +162,6 @@ function draw() {
         let eyeY = Math.cos(RAY_ANGLE);
 
         while (!wallHit && distanceToWall < MAX_DEPTH) {
-            distanceToWall += 0.1;
-
             let testX = Math.floor(playerX + eyeX * distanceToWall);
             let testY = Math.floor(playerY + eyeY * distanceToWall);
 
@@ -103,10 +169,12 @@ function draw() {
                 wallHit = true;
                 distanceToWall = MAX_DEPTH;
             } else {
-                if (MAP[testY][testX] === "#") {
+                if (map[testY][testX] === "#") {
                     wallHit = true;
                 }
             }
+
+            distanceToWall += 0.01;
         }
 
         const CEILING = (SCREEN_HEIGHT / 2.0) - SCREEN_HEIGHT / distanceToWall;
@@ -126,7 +194,10 @@ function draw() {
         CTX.fillStyle = wallColour + shade;
         CTX.fillRect(x, CEILING, 1, WALL);
 
-        CTX.fillStyle = floorColour;
+        tmpShade = 0xFF - Math.floor(distanceToWall) * 3;
+        shade = tmpShade.toString(16);
+
+        CTX.fillStyle = floorColour + shade;
         CTX.fillRect(x, FLOOR, 1, SCREEN_HEIGHT);
     }
 }
