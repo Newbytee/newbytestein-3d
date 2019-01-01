@@ -84,8 +84,14 @@ let playerX = 2.5;
 let playerY = 2.5;
 let playerA = 0.0; // Angle which the player is looking at
 
+let supportsTransparency = true;
+
 CTX.imageSmoothingEnabled = false;
 CANVAS.requestPointerLock = CANVAS.requestPointerLock || CANVAS.mozRequestPointerLock;
+
+if (/Trident/.test(window.navigator.userAgent) || /Edge/.test(window.navigator.userAgent)) {
+    supportsTransparency = false;
+}
 
 document.addEventListener("blur", function() {
     document.removeEventListener("mousemove", lookAround, false);
@@ -215,11 +221,19 @@ function draw() {
         let tmpShade = 0xFF - Math.floor(distanceToWall) * 12;
         shade = tmpShade.toString(16);
 
+        if (!supportsTransparency) {
+            shade = "";
+        }
+
         CTX.fillStyle = wallColour + shade;
         CTX.fillRect(x, CEILING, 1, WALL);
 
         tmpShade = 0xFF - Math.floor(distanceToWall) * 3;
         shade = tmpShade.toString(16);
+
+        if (!supportsTransparency) {
+            shade = "";
+        }
 
         CTX.fillStyle = floorColour + shade;
         CTX.fillRect(x, FLOOR, 1, SCREEN_HEIGHT);
