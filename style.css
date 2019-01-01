@@ -1,0 +1,13 @@
+body {
+    margin: 0;
+    overflow: hidden;
+}
+
+#wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+#gameDisplay {
+    height: 100vh;
+}
