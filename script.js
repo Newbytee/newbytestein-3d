@@ -48,8 +48,8 @@ let wallColour = "#AAAAAA";
 let ceilingColour = "#000000";
 let floorColour = "#3002ff";
 
-let playerX = 3.0;
-let playerY = 3.0;
+let playerX = 2.5;
+let playerY = 2.5;
 let playerA = 0.0; // Angle which the player is looking at
 
 CTX.imageSmoothingEnabled = false;
@@ -59,12 +59,12 @@ setInterval(draw, 100);
 document.addEventListener("keydown", function(evnt) {
     switch (evnt.key) {
         case "w":
-            playerX += Math.sin(playerA) * 2.0;
-            playerY += Math.cos(playerA) * 2.0;
+            playerX += Math.sin(playerA) * 1.5;
+            playerY += Math.cos(playerA) * 1.5;
             break;
         case "s":
-            playerX -= Math.sin(playerA) * 2.0;
-            playerY -= Math.cos(playerA) * 2.0;
+            playerX -= Math.sin(playerA) * 1.5;
+            playerY -= Math.cos(playerA) * 1.5;
             break;
         case "d":
             playerA += 0.2;
