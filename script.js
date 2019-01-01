@@ -87,6 +87,9 @@ let playerA = 0.0; // Angle which the player is looking at
 CTX.imageSmoothingEnabled = false;
 CANVAS.requestPointerLock = CANVAS.requestPointerLock || CANVAS.mozRequestPointerLock;
 
+document.addEventListener("blur", function() {
+    document.removeEventListener("mousemove", lookAround, false);
+});
 document.addEventListener("pointerlockchange", lockChangeAlert, false);
 document.addEventListener("mozpointerlockchange", lockChangeAlert, false);
 
