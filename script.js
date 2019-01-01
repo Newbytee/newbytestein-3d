@@ -85,8 +85,16 @@ let playerY = 2.5;
 let playerA = 0.0; // Angle which the player is looking at
 
 CTX.imageSmoothingEnabled = false;
+CANVAS.requestPointerLock = CANVAS.requestPointerLock || CANVAS.mozRequestPointerLock;
+
+document.addEventListener("pointerlockchange", lockChangeAlert, false);
+document.addEventListener("mozpointerlockchange", lockChangeAlert, false);
 
 setInterval(draw, 50);
+
+CANVAS.addEventListener("click", function() {
+    CANVAS.requestPointerLock();
+});
 
 document.addEventListener("keydown", function(evnt) {
     switch (evnt.key) {
@@ -132,6 +140,19 @@ document.addEventListener("keydown", function(evnt) {
             break;
     }
 });
+
+function lockChangeAlert() {
+    if (document.pointerLockElement === CANVAS ||
+        document.mozPointerLockElement === CANVAS) {
+        document.addEventListener("mousemove", lookAround, false);
+    } else {
+        document.removeEventListener("mousemove", lookAround, false);
+    }
+}
+
+function lookAround(evnt) {
+    playerA += evnt.movementX / 200;
+}
 
 function editMap(x, y, value) {
     const TMP = map[y];
