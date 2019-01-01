@@ -1,5 +1,13 @@
 "use strict";
 
+// Set up game display
+const CANVAS = document.createElement("CANVAS");
+CANVAS.setAttribute("id", "gameDisplay");
+CANVAS.height = window.screen.availHeight;
+CANVAS.width = window.screen.availWidth;
+document.getElementById("wrapper").appendChild(CANVAS);
+
+
 const MAP = [
     "########",
     "#000000#",
@@ -27,7 +35,7 @@ const MAP = [
     "########"
 ];
 
-const CANVAS = document.getElementById("gameDisplay");
+//const CANVAS = document.getElementById("gameDisplay");
 const CTX = CANVAS.getContext("2d");
 const SCREEN_WIDTH = CANVAS.width;
 const SCREEN_HEIGHT = CANVAS.height;
@@ -51,7 +59,12 @@ setInterval(draw, 100);
 document.addEventListener("keydown", function(evnt) {
     switch (evnt.key) {
         case "w":
-            playerX++;
+            playerX += Math.sin(playerA) * 2.0;
+            playerY += Math.cos(playerA) * 2.0;
+            break;
+        case "s":
+            playerX -= Math.sin(playerA) * 2.0;
+            playerY -= Math.cos(playerA) * 2.0;
             break;
         case "d":
             playerA += 0.2;
