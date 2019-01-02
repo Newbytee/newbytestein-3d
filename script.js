@@ -51,7 +51,7 @@ const MAP = [
     "#000000000000000#",
     "#000000000000000#",
     "#000000000000000#",
-    "#000000000000000#",
+    "########0########",
     "#000000000000000#",
     "#000000000000000#",
     "#000000000000000#",
@@ -66,7 +66,7 @@ const MAP = [
 
 let map = MAP;
 
-//const CANVAS = document.getElementById("gameDisplay");
+const SETTINGS_PAGE = document.getElementById("innerDiv");
 const CTX = CANVAS.getContext("2d");
 const SCREEN_WIDTH = CANVAS.width;
 const SCREEN_HEIGHT = CANVAS.height;
@@ -84,26 +84,14 @@ let playerX = 2.5;
 let playerY = 2.5;
 let playerA = 0.0; // Angle which the player is looking at
 
+let graphicsLoop = setInterval(draw, 10);
 let supportsTransparency = true;
+let maxFPS = 60;
 
 CTX.imageSmoothingEnabled = false;
 CANVAS.requestPointerLock = CANVAS.requestPointerLock || CANVAS.mozRequestPointerLock;
 
-if (/Trident/.test(window.navigator.userAgent) || /Edge/.test(window.navigator.userAgent)) {
-    supportsTransparency = false;
-}
-
-document.addEventListener("blur", function() {
-    document.removeEventListener("mousemove", lookAround, false);
-});
-document.addEventListener("pointerlockchange", lockChangeAlert, false);
-document.addEventListener("mozpointerlockchange", lockChangeAlert, false);
-
-setInterval(draw, 50);
-
-CANVAS.addEventListener("click", function() {
-    CANVAS.requestPointerLock();
-});
+init();
 
 document.addEventListener("keydown", function(evnt) {
     switch (evnt.key) {
@@ -150,12 +138,40 @@ document.addEventListener("keydown", function(evnt) {
     }
 });
 
+function init() {
+    if (/Trident/.test(window.navigator.userAgent) || /Edge/.test(window.navigator.userAgent)) {
+        supportsTransparency = false;
+    }
+
+    CTX.imageSmoothingEnabled = /true/.test(localStorage.getItem("antiAliasing"));
+
+    document.addEventListener("blur", function() {
+        document.removeEventListener("mousemove", lookAround, false);
+        clearInterval(graphicsLoop);
+        console.log("Rendering paused");
+    });
+
+    document.addEventListener("focus", function() {
+        graphicsLoop = setInterval(draw, 1000 / maxFPS);
+        console.log("Rendering resumed");
+    });
+
+    document.addEventListener("pointerlockchange", lockChangeAlert, false);
+    document.addEventListener("mozpointerlockchange", lockChangeAlert, false);
+
+    CANVAS.addEventListener("click", function() {
+        CANVAS.requestPointerLock();
+    });
+}
+
 function lockChangeAlert() {
     if (document.pointerLockElement === CANVAS ||
         document.mozPointerLockElement === CANVAS) {
         document.addEventListener("mousemove", lookAround, false);
+        SETTINGS_PAGE.style.display = "none";
     } else {
         document.removeEventListener("mousemove", lookAround, false);
+        SETTINGS_PAGE.style.display = "block";
     }
 }
 
@@ -195,7 +211,7 @@ function draw() {
             let testX = Math.floor(playerX + eyeX * distanceToWall);
             let testY = Math.floor(playerY + eyeY * distanceToWall);
 
-            if (testX < 0 || testX > MAP_WIDTH || testY < 0 || testY > MAP_HEIGHT) {
+            if (distanceToWall > MAX_DEPTH/*testX < 0 || testX > MAP_WIDTH || testY < 0 || testY > MAP_HEIGHT*/) {
                 wallHit = true;
                 distanceToWall = MAX_DEPTH;
             } else {
@@ -204,7 +220,7 @@ function draw() {
                 }
             }
 
-            distanceToWall += 0.01;
+            distanceToWall += 0.05;
         }
 
         const CEILING = (SCREEN_HEIGHT / 2.0) - SCREEN_HEIGHT / distanceToWall;
@@ -218,7 +234,7 @@ function draw() {
         CTX.fillStyle = "#000000";
         CTX.fillRect(x, CEILING, 1, WALL);
 
-        let tmpShade = 0xFF - Math.floor(distanceToWall) * 12;
+        let tmpShade = 0xFF - Math.floor(distanceToWall) * 10;
         shade = tmpShade.toString(16);
 
         if (!supportsTransparency) {
