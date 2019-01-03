@@ -66,6 +66,7 @@ const MAP = [
 
 let map = MAP;
 
+const TOGGLE_SETTINGS_BUTTON = document.getElementById("settingsToggle");
 const SETTINGS_PAGE = document.getElementById("innerDiv");
 const CTX = CANVAS.getContext("2d");
 const SCREEN_WIDTH = CANVAS.width;
@@ -74,7 +75,7 @@ const MAP_WIDTH = map[0].length;
 const MAP_HEIGHT = map.length;
 const FOV = Math.PI / 4.0 * CANVAS.width / 500;
 const MAX_DEPTH = getMaxDrawLength();
-const PLAYER_MOVE_SPEED = 1.5;
+const PLAYER_MOVE_SPEED = 0.2;
 
 let wallColour = "#AAAAAA";
 let ceilingColour = "#000000";
@@ -84,6 +85,7 @@ let playerX = 2.5;
 let playerY = 2.5;
 let playerA = 0.0; // Angle which the player is looking at
 
+let keysPressed = new Set();
 let graphicsLoop = setInterval(draw, 10);
 let supportsTransparency = true;
 let maxFPS = 60;
@@ -92,51 +94,6 @@ CTX.imageSmoothingEnabled = false;
 CANVAS.requestPointerLock = CANVAS.requestPointerLock || CANVAS.mozRequestPointerLock;
 
 init();
-
-document.addEventListener("keydown", function(evnt) {
-    switch (evnt.key) {
-        case "w":
-            playerX += Math.sin(playerA) * PLAYER_MOVE_SPEED;
-            playerY += Math.cos(playerA) * PLAYER_MOVE_SPEED;
-
-            if (map[Math.round(playerY)][Math.round(playerX)] === "#") {
-                playerX -= Math.sin(playerA) * PLAYER_MOVE_SPEED;
-                playerY -= Math.cos(playerA) * PLAYER_MOVE_SPEED;
-            }
-            break;
-        case "s":
-            playerX -= Math.sin(playerA) * PLAYER_MOVE_SPEED;
-            playerY -= Math.cos(playerA) * PLAYER_MOVE_SPEED;
-
-            if (map[Math.round(playerY)][Math.round(playerX)] === "#") {
-                playerX += Math.sin(playerA) * PLAYER_MOVE_SPEED;
-                playerY += Math.cos(playerA) * PLAYER_MOVE_SPEED;
-            }
-            break;
-        case "d":
-            playerA += 0.2;
-            break;
-        case "a":
-            playerA -= 0.2;
-            break;
-        case " ":
-            const X = Math.floor(playerY + Math.sin(playerA));
-            const Y = Math.trunc(playerX + Math.cos(playerA));
-
-            console.log(X);
-            console.log(Y);
-
-            switch (map[Y][X]) {
-                case "#":
-                    editMap(X, Y, "0");
-                    break;
-                case "0":
-                    editMap(X, Y, "#");
-                    break;
-            }
-            break;
-    }
-});
 
 function init() {
     if (/Trident/.test(window.navigator.userAgent) || /Edge/.test(window.navigator.userAgent)) {
@@ -156,6 +113,16 @@ function init() {
         console.log("Rendering resumed");
     });
 
+    document.addEventListener("keydown", function(evnt) {
+        keysPressed.add(evnt.key);
+    });
+
+    document.addEventListener("keyup", function (evnt) {
+        keysPressed.delete(evnt.key);
+    });
+
+    setInterval(movement, 10);
+
     document.addEventListener("pointerlockchange", lockChangeAlert, false);
     document.addEventListener("mozpointerlockchange", lockChangeAlert, false);
 
@@ -168,10 +135,10 @@ function lockChangeAlert() {
     if (document.pointerLockElement === CANVAS ||
         document.mozPointerLockElement === CANVAS) {
         document.addEventListener("mousemove", lookAround, false);
-        SETTINGS_PAGE.style.display = "none";
+        TOGGLE_SETTINGS_BUTTON.style.display = "none";
     } else {
         document.removeEventListener("mousemove", lookAround, false);
-        SETTINGS_PAGE.style.display = "block";
+        TOGGLE_SETTINGS_BUTTON.style.display = "block";
     }
 }
 
@@ -195,6 +162,73 @@ function getMaxDrawLength() {
     } else {
         return MAP_WIDTH;
     }
+}
+
+function movement() {
+    const FINAL_SPEED = PLAYER_MOVE_SPEED / keysPressed.size;
+
+    keysPressed.forEach(function(value1) {
+        switch (value1) {
+            case "w":
+                playerX += Math.sin(playerA) * FINAL_SPEED;
+                playerY += Math.cos(playerA) * FINAL_SPEED;
+
+                if (map[Math.round(playerY)][Math.round(playerX)] === "#") {
+                    playerX -= Math.sin(playerA) * FINAL_SPEED;
+                    playerY -= Math.cos(playerA) * FINAL_SPEED;
+                }
+                break;
+            case "s":
+                playerX -= Math.sin(playerA) * FINAL_SPEED;
+                playerY -= Math.cos(playerA) * FINAL_SPEED;
+
+                if (map[Math.round(playerY)][Math.round(playerX)] === "#") {
+                    playerX += Math.sin(playerA) * FINAL_SPEED;
+                    playerY += Math.cos(playerA) * FINAL_SPEED;
+                }
+                break;
+            case "a":
+                playerX -= Math.cos(playerA) * FINAL_SPEED;
+                playerY += Math.sin(playerA) * FINAL_SPEED;
+
+                if (map[Math.round(playerY)][Math.round(playerX)] === "#") {
+                    playerX += Math.cos(playerA) * FINAL_SPEED;
+                    playerY -= Math.sin(playerA) * FINAL_SPEED;
+                }
+                break;
+            case "d":
+                playerX += Math.cos(playerA) * FINAL_SPEED;
+                playerY -= Math.sin(playerA) * FINAL_SPEED;
+
+                if (map[Math.round(playerY)][Math.round(playerX)] === "#") {
+                    playerX -= Math.cos(playerA) * FINAL_SPEED;
+                    playerY += Math.sin(playerA) * FINAL_SPEED;
+                }
+                break;
+            case "e":
+                playerA += 0.2;
+                break;
+            case "q":
+                playerA -= 0.2;
+                break;
+            case " ":
+                const X = Math.floor(playerY + Math.sin(playerA));
+                const Y = Math.trunc(playerX + Math.cos(playerA));
+
+                console.log(X);
+                console.log(Y);
+
+                switch (map[Y][X]) {
+                    case "#":
+                        editMap(X, Y, "0");
+                        break;
+                    case "0":
+                        editMap(X, Y, "#");
+                        break;
+                }
+                break;
+        }
+    });
 }
 
 function draw() {
